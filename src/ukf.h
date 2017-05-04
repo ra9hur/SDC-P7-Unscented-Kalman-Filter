@@ -74,6 +74,9 @@ public:
   ///* the current NIS for laser
   double NIS_laser_;
 
+  ///* To access hepler functions
+  Tools tools;
+
   /**
    * Constructor
    */
@@ -91,11 +94,25 @@ public:
   void ProcessMeasurement(MeasurementPackage meas_package);
 
   /**
+   * AugmentedSigmaPoints: Generates augmented sigma points for a
+   * given state and co-variance matrix
+   * @param Xsig_aug matrix to store generated sigma points
+   */
+  void AugmentedSigmaPoints(MatrixXd* Xsig_aug);
+
+  /**
+   * SigmaPointPrediction: Predict sigma points using process model
+   * given augmented sigma points
+   * @param Xsig_aug matrix to store generated sigma points
+   */
+  void SigmaPointPrediction(MatrixXd* Xsig_aug, MatrixXd* Xsig_pred_, double dt);
+
+  /**
    * Prediction Predicts sigma points, the state, and the state covariance
    * matrix
    * @param delta_t Time between k and k+1 in s
    */
-  void Prediction(double delta_t);
+    void Prediction(double delta_t);
 
   /**
    * Updates the state and the state covariance matrix using a laser measurement
