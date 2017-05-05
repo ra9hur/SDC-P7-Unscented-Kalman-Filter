@@ -90,6 +90,15 @@ UKF::UKF() {
   // As suggested by reviewer, this line is redundant
   //Tools tools;
 
+  // the current NIS for radar
+  NIS_radar_ = 0.0;
+
+  // the current NIS for laser
+  NIS_laser_ = 0.0;
+
+  // predicted sigma points matrix
+  Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
+  Xsig_pred_.fill(0.0);
 }
 
 UKF::~UKF() {}
@@ -335,7 +344,6 @@ void UKF::Prediction(double dt) {
   /*****************************************************************************
   *  Predict Sigma Points
   ****************************************************************************/
-  Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
   SigmaPointPrediction(Xsig_aug, dt);
 
 
