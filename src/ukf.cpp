@@ -12,6 +12,11 @@ using std::vector;
  * Initializes Unscented Kalman filter
  */
 UKF::UKF() {
+  
+  // This initialization missed in the initial submit
+  // Had no issues with Ubuntu, so overseen this completely
+  is_initialized_ = false;
+  
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -82,7 +87,8 @@ UKF::UKF() {
 
   time_us_ = 0.;
 
-  Tools tools;
+  // As suggested by reviewer, this line is redundant
+  //Tools tools;
 
 }
 
@@ -166,13 +172,16 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   float delta_t = (meas_package.timestamp_ - time_us_) / 1000000.0;	//dt - expressed in seconds
   time_us_ = meas_package.timestamp_;
 
+  /*
+   * As suggested by reviewer, this check is redundant
+   * Required only for "sample-laser-radar-measurement-data-2.txt"
   while (delta_t > 0.09)
   {
     const double dt = 0.05;
     Prediction(dt);
     delta_t -= dt;
   }
-
+  */
   Prediction(delta_t); 
 
 
@@ -202,7 +211,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 * given state and co-variance matrix
 * @param Xsig_aug matrix to store generated sigma points
 */
-void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug) {
+// function signature changed as per review comments
+MatrixXd UKF::AugmentedSigmaPoints(MatrixXd &Xsig_aug) {
 
   //create augmented mean vector
   VectorXd x_aug = VectorXd(7);
@@ -234,15 +244,17 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug) {
   MatrixXd A = P_ak.llt().matrixL();
   
   //create augmented sigma points
-  Xsig_aug->col(0) = x_aug;
+  Xsig_aug.col(0) = x_aug;
   float sqrt_lambda = sqrt(lambda_+n_aug_);
 
   for (int i=0;i<n_aug_;i++) {
-    Xsig_aug->col(i+1) = x_aug + sqrt_lambda*A.col(i);
-    Xsig_aug->col(i+1+n_aug_) = x_aug - sqrt_lambda*A.col(i);
+    Xsig_aug.col(i+1) = x_aug + sqrt_lambda*A.col(i);
+    Xsig_aug.col(i+1+n_aug_) = x_aug - sqrt_lambda*A.col(i);
   }
   //print result
   //std::cout << "Xsig_aug = " << std::endl << Xsig_aug.col(0) << std::endl;
+
+  return Xsig_aug;
 }
 
 
@@ -251,7 +263,10 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug) {
  * given augmented sigma points
  * @param Xsig_aug matrix to store generated sigma points
  */
-void UKF::SigmaPointPrediction(MatrixXd* Xsig_aug, MatrixXd* Xsig_pred_, double dt) {
+// void SigmaPointPrediction(MatrixXd* Xsig_aug, MatrixXd* Xsig_pred_, double dt);
+// Review comments - removing "MatrixXd* Xsig_pred_"
+// Redundant - anyway available inside the function
+void UKF::SigmaPointPrediction(const MatrixXd &Xsig_aug, double dt) {
 
   //predict sigma points
   MatrixXd X = MatrixXd(n_x_,2 * n_aug_ + 1);
@@ -259,9 +274,9 @@ void UKF::SigmaPointPrediction(MatrixXd* Xsig_aug, MatrixXd* Xsig_pred_, double 
   VectorXd Nu_yaw = VectorXd(2 * n_aug_ + 1);
 
   //X = Xsig_aug.topLeftCorner(5,15);
-  X = Xsig_aug->topRows(5);
-  Nu_a = Xsig_aug->row(5);
-  Nu_yaw = Xsig_aug->row(6);
+  X = Xsig_aug.topRows(5);
+  Nu_a = Xsig_aug.row(5);
+  Nu_yaw = Xsig_aug.row(6);
 
   VectorXd dX = VectorXd(n_x_);
   VectorXd noise = VectorXd(n_x_);
@@ -289,7 +304,7 @@ void UKF::SigmaPointPrediction(MatrixXd* Xsig_aug, MatrixXd* Xsig_pred_, double 
             0., yaw_dot*dt, 0.;
     }
     //std::cout << "Xsig_pred" << std::endl;
-    Xsig_pred_->col(i) << X.col(i) + dX + noise;
+    Xsig_pred_.col(i) << X.col(i) + dX + noise;
     //std::cout << Xsig_pred << std::endl << std::endl;
   }
   //print result
@@ -314,14 +329,14 @@ void UKF::Prediction(double dt) {
   *  Generate and Augment Sigma Points
   ****************************************************************************/
   MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-  AugmentedSigmaPoints(&Xsig_aug);
+  Xsig_aug = AugmentedSigmaPoints(Xsig_aug);
 
 
   /*****************************************************************************
   *  Predict Sigma Points
   ****************************************************************************/
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
-  SigmaPointPrediction(&Xsig_aug, &Xsig_pred_, dt);
+  SigmaPointPrediction(Xsig_aug, dt);
 
 
   /*****************************************************************************
@@ -436,7 +451,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   *  Predict Radar Measurement
   ****************************************************************************/
   //set measurement dimension, radar can measure r, phi, and r_dot
-  int n_z = 3;
+  const int n_z = 3;
   
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);

@@ -98,14 +98,16 @@ public:
    * given state and co-variance matrix
    * @param Xsig_aug matrix to store generated sigma points
    */
-  void AugmentedSigmaPoints(MatrixXd* Xsig_aug);
+  // function signature changed as per review comments
+  MatrixXd AugmentedSigmaPoints(MatrixXd &Xsig_aug);
 
   /**
    * SigmaPointPrediction: Predict sigma points using process model
    * given augmented sigma points
    * @param Xsig_aug matrix to store generated sigma points
    */
-  void SigmaPointPrediction(MatrixXd* Xsig_aug, MatrixXd* Xsig_pred_, double dt);
+  // function signature changed as per review comments
+  void SigmaPointPrediction(const MatrixXd &Xsig_aug, double dt);
 
   /**
    * Prediction Predicts sigma points, the state, and the state covariance

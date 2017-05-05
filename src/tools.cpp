@@ -18,7 +18,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   */
 
   VectorXd rmse(4);
-  rmse << 0,0,0,0;
+  rmse.fill(0.0);
 
   // check the validity of the following inputs:
   //  * the estimation vector size should not be zero
@@ -34,10 +34,13 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   else {
 
 	  VectorXd error(4), error_sq(4), mean(4);
+    error.fill(0.0);
+    error_sq.fill(0.0);
+    mean.fill(0.0);
 
 	  size_t n = estimations.size();
 
-	  for(int i=0; (i < n); ++i){
+	  for(unsigned int i=0; (i < n); ++i){
       // residual error
 		  error = estimations[i]-ground_truth[i];
 		  error = error.array().abs();
@@ -64,8 +67,13 @@ VectorXd Tools::AngleNormalize(VectorXd diff, int i) {
   TODO:
     * Calculations to normalize given angle here.
   */
-  while (diff(i)> M_PI) diff(i)-=2.*M_PI;
-  while (diff(i)<-M_PI) diff(i)+=2.*M_PI;
+  //while (diff(i)> M_PI) diff(i)-=2.*M_PI;
+  //while (diff(i)<-M_PI) diff(i)+=2.*M_PI;
+
+	if (diff[i] > M_PI)
+		diff[i] = fmod(diff[i] - M_PI, 2*M_PI) - M_PI;
+	if (diff[i] < -M_PI)
+		diff[i] = fmod(diff[i] + M_PI, 2*M_PI) + M_PI;
 
   return diff;
 }
