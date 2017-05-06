@@ -1,5 +1,6 @@
 # Unscented Kalman Filter Project
-An unscented Kalman filter is implemented using the CTRV motion model.
+
+In this project, Unscented Kalman filter (UKF) is implemented using the Constant Turn-Rate and velocity magnitude (CTRV) motion model.
 
 All Kalman filters have the same three steps:
 
@@ -7,7 +8,11 @@ All Kalman filters have the same three steps:
 2. Prediction
 3. Update
 
-A standard Kalman filter can only handle linear equations. Both the extended Kalman filter and the unscented Kalman filter allow you to use non-linear equations; the difference between EKF and UKF is how they handle non-linear equations. But the basics are the same: initialize, predict, update.
+A standard Kalman filter can only handle linear equations. Both the extended Kalman filter (EKF) and the unscented Kalman filter (UKF) allow you to use non-linear equations; the difference between EKF and UKF is how they handle non-linear equations. But the basics are the same: initialize, predict, update.
+
+EKF uses the method called first order Taylor expansion to obtain linear approximation of the non-linear measurements. In  highly non-linear systems, covariance after update step, may not be gaussian. Applying EKF may cause significant errors because of the propagation of uncertainty through the nonlinear system.
+
+The idea with UKF is to produce several sampling points (Sigma points) around the current state estimate based on its covariance. Then, propagating these points through the nonlinear map to get more accurate estimation of the mean and covariance of the mapping results. In this way, it avoids the need to calculate the Jacobian, hence incurs only the similar computation load as the EKF.
 
 ---
 
